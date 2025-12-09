@@ -247,6 +247,189 @@ For detailed documentation including design decisions, state management, and imp
 
 ---
 
+### Temperature Converter CLI
+
+A pure function-based temperature converter with comprehensive validation and testing.
+
+#### Features
+
+- 🌡️ Celsius ⟷ Fahrenheit conversion
+- ✨ Pure functions (no side effects)
+- ✅ Comprehensive validation
+- 📝 24 comprehensive tests
+- 🎯 Clear error messages
+
+#### Installation
+
+No installation required. Use the npm script:
+
+```bash
+npm run temp -- --from <C|F> --to <C|F> <value>
+```
+
+Or run directly with Node.js:
+
+```bash
+node src/temperature/cli.js --from <C|F> --to <C|F> <value>
+```
+
+#### Usage Examples
+
+**Display help:**
+```bash
+npm run temp -- --help
+# Shows all available commands and usage
+```
+
+**Convert Celsius to Fahrenheit:**
+```bash
+npm run temp -- --from C --to F 0
+# Output: 0°C = 32°F
+
+npm run temp -- --from C --to F 25
+# Output: 25°C = 77°F
+
+npm run temp -- --from C --to F 100
+# Output: 100°C = 212°F
+```
+
+**Convert Fahrenheit to Celsius:**
+```bash
+npm run temp -- --from F --to C 32
+# Output: 32°F = 0°C
+
+npm run temp -- --from F --to C 98.6
+# Output: 98.6°F = 37°C
+
+npm run temp -- --from F --to C 212
+# Output: 212°F = 100°C
+```
+
+**Alternative syntax (= separator):**
+```bash
+npm run temp -- --from=C --to=F 37
+# Output: 37°C = 98.6°F
+```
+
+**Decimal values:**
+```bash
+npm run temp -- --from C --to F 20.5
+# Output: 20.5°C = 68.9°F
+```
+
+**Negative temperatures:**
+```bash
+npm run temp -- --from C --to F -40
+# Output: -40°C = -40°F
+```
+
+#### Error Handling
+
+The converter validates all inputs and provides clear error messages:
+
+**Same unit conversion:**
+```bash
+npm run temp -- --from C --to C 25
+# Output: ❌ Error: Cannot convert from C to C
+```
+
+**Invalid unit:**
+```bash
+npm run temp -- --from K --to F 0
+# Output: ❌ Error: Invalid unit: K. Must be C or F
+```
+
+**Missing required argument:**
+```bash
+npm run temp -- --from C 25
+# Output: ❌ Error: Missing required argument: --to
+```
+
+**Missing temperature value:**
+```bash
+npm run temp -- --from C --to F
+# Output: ❌ Error: Missing temperature value
+```
+
+**Invalid temperature value:**
+```bash
+npm run temp -- --from C --to F abc
+# Output: ❌ Error: Invalid temperature value: abc
+```
+
+#### API (Programmatic Usage)
+
+The CLI wraps pure functions from `src/temperature/index.js`:
+
+```javascript
+const { cToF, fToC, validateOptions } = require('./src/temperature');
+
+// Convert Celsius to Fahrenheit
+const fahrenheit = cToF(25);
+console.log(fahrenheit); // 77
+
+// Convert Fahrenheit to Celsius
+const celsius = fToC(77);
+console.log(celsius); // 25
+
+// Validate conversion options (throws on error)
+try {
+  validateOptions('C', 'F'); // OK
+  validateOptions('C', 'C'); // Throws: Cannot convert from C to C
+} catch (error) {
+  console.error(error.message);
+}
+```
+
+#### Available Functions
+
+| Function | Description | Parameters | Returns |
+|----------|-------------|------------|---------|
+| `cToF(celsius)` | Converts Celsius to Fahrenheit | `number` | `number` |
+| `fToC(fahrenheit)` | Converts Fahrenheit to Celsius | `number` | `number` |
+| `validateOptions(from, to)` | Validates conversion options | `string, string` | `void` (throws on error) |
+
+#### Conversion Formulas
+
+**Celsius to Fahrenheit:**
+```
+F = (C × 9/5) + 32
+```
+
+**Fahrenheit to Celsius:**
+```
+C = (F - 32) × 5/9
+```
+
+#### Running Tests
+
+```bash
+# Run all tests (includes 24 temperature tests)
+npm test
+
+# Run temperature tests only
+npm test -- tests/temperature.test.js
+```
+
+**Test Coverage:**
+- ✅ 6 tests for Celsius to Fahrenheit conversion
+- ✅ 6 tests for Fahrenheit to Celsius conversion
+- ✅ 10 tests for validation (invalid units, same unit, etc.)
+- ✅ 2 tests for round-trip conversions
+- ✅ Total: 24 comprehensive tests, all passing
+
+#### Key Test Cases
+
+- **Freezing point**: 0°C = 32°F
+- **Boiling point**: 100°C = 212°F
+- **Body temperature**: 37°C = 98.6°F
+- **Special point**: -40°C = -40°F (same in both scales)
+- **Room temperature**: 25°C = 77°F
+- **Decimal values**: Handles fractional temperatures
+- **Round-trip**: C → F → C returns original value
+
+---
+
 ## 📚 Documentation Guide
 
 This directory contains project documentation, including review packets, journals, and workbooks for tracking development progress.

@@ -8,7 +8,8 @@
     "test": "jest",
     "lint": "eslint src/**/*.js tests/**/*.js",
     "start": "node src/hello/index.js",
-    "stopwatch": "node src/stopwatch/cli.js"
+    "stopwatch": "node src/stopwatch/cli.js",
+    "temp": "node src/temperature/cli.js"
   },
   "keywords": [],
   "author": "",
