@@ -1,5 +1,5 @@
-function hello() {
-  return `Hello world!`;
+function formatGreeting(name, shout) {
+    return shout ? `HELLO, ${name}!` : `Hello, ${name}!`;
 }
 
-console.log(hello());
+module.exports = { formatGreeting };

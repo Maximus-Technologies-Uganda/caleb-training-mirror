@@ -1,4 +1,90 @@
-# Documentation Guide
+# Maximus 2.0
+
+A project containing CLI tools and utilities with comprehensive documentation and testing.
+
+---
+
+## 🛠️ CLI Tools
+
+### Hello CLI
+
+A simple greeting CLI tool that demonstrates proper argument parsing and testing.
+
+#### Installation
+
+No installation required. Just run with Node.js:
+
+```bash
+node src/hello/cli.js --name=<name> [--shout]
+```
+
+#### Usage Examples
+
+**Basic greeting (lowercase):**
+```bash
+node src/hello/cli.js --name=Caleb
+# Output: Hello, Caleb!
+```
+
+**Greeting with shouting (uppercase):**
+```bash
+node src/hello/cli.js --name=Caleb --shout
+# Output: HELLO, Caleb!
+```
+
+**Alternative syntax (space-separated):**
+```bash
+node src/hello/cli.js --name Caleb --shout
+# Output: HELLO, Caleb!
+```
+
+#### Error Cases
+
+**Missing name (required argument):**
+```bash
+node src/hello/cli.js --shout
+# Output:
+# Error: --name is required
+# Usage: node src/hello/cli.js --name=<name> [--shout]
+# Exit code: 1
+```
+
+**No arguments:**
+```bash
+node src/hello/cli.js
+# Output:
+# Error: --name is required
+# Usage: node src/hello/cli.js --name=<name> [--shout]
+# Exit code: 1
+```
+
+#### API
+
+The CLI wraps the `formatGreeting` function from `src/hello/index.js`:
+
+```javascript
+const { formatGreeting } = require('./src/hello/index.js');
+
+// Returns: "Hello, Alice!"
+formatGreeting('Alice', false);
+
+// Returns: "HELLO, Bob!"
+formatGreeting('Bob', true);
+```
+
+#### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run hello CLI tests only
+npm test -- tests/hello.test.js
+```
+
+---
+
+## 📚 Documentation Guide
 
 This directory contains project documentation, including review packets, journals, and workbooks for tracking development progress.
 
