@@ -1,0 +1,66 @@
+# .github/workflows/mirror-dev-to-public.yml
+name: on push to 
+
+on:
+  push:
+    branches:
+      - development
+
+permissions:
+  contents: read  # read from root via checkout; write happens via SSH to mirror
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    env:
+      MIRROR_OWNER: "Maximus-Technologies-Uganda"
+      MIRROR_REPO: "training-caleb-mirror"
+      MIRROR_BRANCH: "development"   # target branch in the mirror
+      ROOT_BRANCH: "development"     # source branch in this root repo
+
+    steps:
+      - name: Checkout root repository (development)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false   # avoid mixing HTTPS creds with SSH
+          fetch-depth: 0
+          ref: ${{ env.ROOT_BRANCH }}
+
+      - name: Configure SSH agent with deploy key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_DEPLOY_KEY }}
+
+      - name: Trust GitHub host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+      - name: Configure git identity
+        run: |
+          git config user.name "ci-mirror-bot"
+          git config user.email "ci-mirror-bot@users.noreply.github.com"
+
+      - name: Add mirror remote (SSH)
+        run: |
+          git remote add mirror git@github.com:${{ env.MIRROR_OWNER }}/${{ env.MIRROR_REPO }}.git
+          git remote -v
+
+      - name: Ensure local branch is current
+        run: |
+          git checkout ${{ env.ROOT_BRANCH }}
+          git pull --ff-only origin ${{ env.ROOT_BRANCH }}
+
+      - name: Force-with-lease push to mirror branch
+        run: |
+          # Mirrors the exact state of the root's development to the mirror's development
+          # Using --force-with-lease to avoid clobbering unexpected remote updates.
+          git push --force-with-lease mirror HEAD:${{ env.MIRROR_BRANCH }}
+
+      - name: Verify mirror sync (optional)
+        run: |
+          git fetch mirror ${{ env.MIRROR_BRANCH }}:${{ env.MIRROR_BRANCH }}-mirror
+          echo "Root SHA:   $(git rev-parse HEAD)"
+          echo "Mirror SHA: $(git rev-parse ${{ env.MIRROR_BRANCH }}-mirror)"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse ${{ env.MIRROR_BRANCH }}-mirror )"
