@@ -5,7 +5,7 @@
   "main": "src/hello/index.js",
   "scripts": {
     "dev": "node --watch src/hello/index.js",
-    "test": "jest",     
+    "test": "jest",
     "lint": "eslint src/**/*.js tests/**/*.js",
     "start": "node src/hello/index.js"
   },
