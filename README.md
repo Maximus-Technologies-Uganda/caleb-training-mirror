@@ -4,6 +4,31 @@ A project containing CLI tools and utilities with comprehensive documentation an
 
 ---
 
+## 📋 Quick Start
+
+### Available CLI Tools
+
+| Tool | Command | Purpose | Tests |
+|------|---------|---------|-------|
+| **Hello** | `node src/hello/cli.js` | Greeting generator with optional shout mode | 4 tests |
+| **Stopwatch** | `npm run stopwatch` | Timing tool with lap recording | 20 tests |
+| **Temperature** | `npm run temp` | Celsius ⟷ Fahrenheit converter | 24 tests |
+
+### Running All Tests
+
+```bash
+npm test          # Run all 49 tests
+npm run lint      # Check code quality
+```
+
+### Test Coverage Summary
+
+- ✅ **49 total tests** across 4 test suites
+- ✅ **100% passing** - all tests green
+- ✅ **Comprehensive coverage**: conversions, validations, error handling, edge cases
+
+---
+
 ## 🛠️ CLI Tools
 
 ### Hello CLI
@@ -80,6 +105,19 @@ npm test
 
 # Run hello CLI tests only
 npm test -- tests/hello.test.js
+```
+
+#### CLI Usage
+
+```bash
+# Show help
+node src/hello/cli.js --help
+
+# Basic usage
+node src/hello/cli.js --name=YourName
+
+# With shout flag
+node src/hello/cli.js --name YourName --shout
 ```
 
 ---

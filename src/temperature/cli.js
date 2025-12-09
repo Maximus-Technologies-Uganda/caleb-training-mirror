@@ -106,7 +106,8 @@ function printHelp() {
   console.log(`
 🌡️  Temperature Converter
 
-Usage: node temperature/cli.js --from <C|F> --to <C|F> <value>
+Usage: npm run temp -- --from <C|F> --to <C|F> <value>
+   or: node src/temperature/cli.js --from <C|F> --to <C|F> <value>
 
 Options:
   --from <C|F>    Source temperature unit (C = Celsius, F = Fahrenheit)
@@ -115,13 +116,13 @@ Options:
   --help, -h      Show this help message
 
 Examples:
-  node temperature/cli.js --from C --to F 0
+  npm run temp -- --from C --to F 0
   # Output: 0°C = 32°F
 
-  node temperature/cli.js --from=F --to=C 98.6
+  npm run temp -- --from=F --to=C 98.6
   # Output: 98.6°F = 37°C
 
-  node temperature/cli.js --from C --to F 25
+  npm run temp -- --from C --to F 25
   # Output: 25°C = 77°F
 `);
 }

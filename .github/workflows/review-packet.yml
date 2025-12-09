@@ -1,0 +1,267 @@
+name: Generate Review Packet
+
+on:
+  workflow_dispatch:  # Manual trigger
+  
+  # Trigger on PR to development (generates preview)
+  pull_request:
+    branches:
+      - development
+    types: [opened, synchronize, reopened]
+  
+  # Trigger when PR is merged to development (final packet)
+  push:
+    branches:
+      - development
+
+jobs:
+  generate-review-packet:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create review packet directory
+        run: mkdir -p review-packet
+
+      # ========================================
+      # Run Tests & Linting
+      # ========================================
+      - name: Run tests with coverage
+        run: npm test -- --coverage --coverageReporters=text --coverageReporters=json-summary 2>&1 | tee review-packet/test-output.txt
+        continue-on-error: true
+
+      - name: Run linting
+        run: npm run lint 2>&1 | tee review-packet/lint-output.txt
+        continue-on-error: true
+
+      - name: Copy coverage report
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            cp coverage/coverage-summary.json review-packet/
+          fi
+        continue-on-error: true
+
+      # ========================================
+      # Test CLI Tools
+      # ========================================
+      - name: Test Hello CLI
+        run: |
+          echo "=== Testing Hello CLI ===" > review-packet/cli-tests.txt
+          echo "" >> review-packet/cli-tests.txt
+          echo "$ node src/hello/cli.js --help" >> review-packet/cli-tests.txt
+          node src/hello/cli.js --help >> review-packet/cli-tests.txt 2>&1
+          echo "" >> review-packet/cli-tests.txt
+          echo "$ node src/hello/cli.js --name=TestUser" >> review-packet/cli-tests.txt
+          node src/hello/cli.js --name=TestUser >> review-packet/cli-tests.txt 2>&1
+          echo "" >> review-packet/cli-tests.txt
+        continue-on-error: true
+
+      - name: Test Stopwatch CLI
+        run: |
+          echo "=== Testing Stopwatch CLI ===" >> review-packet/cli-tests.txt
+          echo "" >> review-packet/cli-tests.txt
+          echo "$ npm run stopwatch help" >> review-packet/cli-tests.txt
+          npm run stopwatch help >> review-packet/cli-tests.txt 2>&1
+          echo "" >> review-packet/cli-tests.txt
+        continue-on-error: true
+
+      - name: Test Temperature CLI
+        run: |
+          echo "=== Testing Temperature CLI ===" >> review-packet/cli-tests.txt
+          echo "" >> review-packet/cli-tests.txt
+          echo "$ npm run temp -- --help" >> review-packet/cli-tests.txt
+          npm run temp -- --help >> review-packet/cli-tests.txt 2>&1
+          echo "" >> review-packet/cli-tests.txt
+          echo "$ npm run temp -- --from C --to F 0" >> review-packet/cli-tests.txt
+          npm run temp -- --from C --to F 0 >> review-packet/cli-tests.txt 2>&1
+          echo "" >> review-packet/cli-tests.txt
+        continue-on-error: true
+
+      # ========================================
+      # Documentation & Git Info
+      # ========================================
+      - name: Copy documentation
+        run: |
+          cp -r docs/* review-packet/ 2>/dev/null || true
+          cp README.md review-packet/ 2>/dev/null || true
+
+      - name: Capture git log
+        run: |
+          git log --oneline --graph --all -20 > review-packet/git-log.txt
+
+      - name: Capture branch info
+        run: |
+          echo "Branch: $(git branch --show-current)" > review-packet/branch-info.txt
+          echo "Commit: $(git rev-parse HEAD)" >> review-packet/branch-info.txt
+          echo "Short: $(git rev-parse --short HEAD)" >> review-packet/branch-info.txt
+          echo "Author: $(git log -1 --pretty=format:'%an <%ae>')" >> review-packet/branch-info.txt
+          echo "Date: $(git log -1 --pretty=format:'%ad')" >> review-packet/branch-info.txt
+
+      - name: List changed files
+        run: |
+          git diff --name-only $(git merge-base origin/development HEAD 2>/dev/null)...HEAD > review-packet/changed-files.txt 2>/dev/null || \
+          git diff --name-only HEAD~5...HEAD > review-packet/changed-files.txt 2>/dev/null || \
+          echo "No changes detected" > review-packet/changed-files.txt
+
+      # ========================================
+      # Generate Summary Report
+      # ========================================
+      - name: Generate Review Packet Summary
+        run: |
+          cat << 'EOF' > review-packet/REVIEW_PACKET_SUMMARY.md
+          # Chapter 1 - CLI Tools Review Packet (Auto-Generated)
+          
+          **Branch**: $(git branch --show-current)
+          **Commit**: $(git rev-parse --short HEAD)
+          **Generated**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          ---
+          
+          ## 📋 Project Summary
+          
+          ### CLI Tools Implemented
+          - **Hello CLI**: Greeting generator with argument parsing
+          - **Stopwatch CLI**: Timing tool with lap recording
+          - **Temperature CLI**: Celsius/Fahrenheit converter
+          
+          ### Test Summary
+          EOF
+          
+          if [ -f review-packet/test-output.txt ]; then
+            echo "\`\`\`" >> review-packet/REVIEW_PACKET_SUMMARY.md
+            grep -E "(Test Suites:|Tests:|Snapshots:|Time:)" review-packet/test-output.txt | tail -5 >> review-packet/REVIEW_PACKET_SUMMARY.md || echo "Test results not available" >> review-packet/REVIEW_PACKET_SUMMARY.md
+            echo "\`\`\`" >> review-packet/REVIEW_PACKET_SUMMARY.md
+          fi
+          
+          cat << 'EOF' >> review-packet/REVIEW_PACKET_SUMMARY.md
+          
+          ### Coverage Summary
+          EOF
+          
+          if [ -f review-packet/coverage-summary.json ]; then
+            echo "\`\`\`" >> review-packet/REVIEW_PACKET_SUMMARY.md
+            node -e "
+              const summary = require('./review-packet/coverage-summary.json');
+              const total = summary.total;
+              console.log('Statements: ' + total.statements.pct + '%');
+              console.log('Branches: ' + total.branches.pct + '%');
+              console.log('Functions: ' + total.functions.pct + '%');
+              console.log('Lines: ' + total.lines.pct + '%');
+            " >> review-packet/REVIEW_PACKET_SUMMARY.md 2>/dev/null || echo "Coverage data not available" >> review-packet/REVIEW_PACKET_SUMMARY.md
+            echo "\`\`\`" >> review-packet/REVIEW_PACKET_SUMMARY.md
+          else
+            echo "Coverage data not available" >> review-packet/REVIEW_PACKET_SUMMARY.md
+          fi
+          
+          cat << 'EOF' >> review-packet/REVIEW_PACKET_SUMMARY.md
+          
+          ### Linting Status
+          EOF
+          
+          if [ -f review-packet/lint-output.txt ]; then
+            if grep -q "error" review-packet/lint-output.txt; then
+              echo "❌ Linting errors found" >> review-packet/REVIEW_PACKET_SUMMARY.md
+            else
+              echo "✅ No linting errors" >> review-packet/REVIEW_PACKET_SUMMARY.md
+            fi
+          fi
+          
+          cat << 'EOF' >> review-packet/REVIEW_PACKET_SUMMARY.md
+          
+          ---
+          
+          ## 📊 Detailed Reports
+          
+          ### Test Output
+          See `test-output.txt` for full test results.
+          
+          ### CLI Tests
+          See `cli-tests.txt` for CLI smoke tests.
+          
+          ### Git History
+          See `git-log.txt` for recent commits.
+          
+          ---
+          
+          ## 📦 Artifact Contents
+          
+          - `review-packet-chapter1.md` - Main review packet (if exists)
+          - `journals/` - Daily journals and individual PR review packets
+          - `test-output.txt` - Full test output
+          - `cli-tests.txt` - CLI smoke test results
+          - `lint-output.txt` - Linting results
+          - `coverage-summary.json` - Coverage data
+          - `git-log.txt` - Recent git history
+          - `branch-info.txt` - Branch and commit details
+          - `changed-files.txt` - Files modified
+          - `README.md` - Project README
+          
+          ---
+          
+          ## 🔗 Quick Links
+          
+          - Repository: ${{ github.server_url }}/${{ github.repository }}
+          - Branch: ${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}
+          - CI Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - Download Artifact: Check workflow run for downloadable artifacts
+          
+          EOF
+
+      - name: Upload Review Packet
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter1-review-packet-${{ github.run_number }}
+          path: review-packet/
+          retention-days: 90
+
+      - name: Create Job Summary
+        run: |
+          echo "# Review Packet Generated ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: $(git rev-parse --short HEAD)" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: $(git branch --show-current)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          if [ -f review-packet/test-output.txt ]; then
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            grep -E "(Test Suites:|Tests:)" review-packet/test-output.txt | tail -2 >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Download the full review packet from the artifacts section above." >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with summary (if PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let summary = '';
+            try {
+              summary = fs.readFileSync('review-packet/REVIEW_PACKET_SUMMARY.md', 'utf8');
+            } catch (e) {
+              summary = '⚠️ Review packet generation failed. Check workflow logs.';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📦 Review Packet Generated\n\n${summary}\n\n---\n\n📎 Full artifacts available in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).`
+            });
