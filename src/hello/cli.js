@@ -1,12 +1,49 @@
+#!/usr/bin/env node
+
+/**
+ * CLI wrapper for hello greeting
+ */
+
 const { formatGreeting } = require('./index.js');
 
+/**
+ * Prints help information
+ */
+function printHelp() {
+    console.log(`
+👋 Hello CLI
+
+Usage: node hello/cli.js --name=<name> [--shout]
+
+Options:
+  --name <name>   Name to greet (required)
+  --shout         Output greeting in uppercase
+  --help, -h      Show this help message
+
+Examples:
+  node hello/cli.js --name=Caleb
+  # Output: Hello, Caleb!
+
+  node hello/cli.js --name Caleb --shout
+  # Output: HELLO, Caleb!
+`);
+}
+
+/**
+ * Parses command line arguments
+ * @param {string[]} argv - Command line arguments
+ * @returns {object} Parsed arguments {name, shout}
+ */
 function parseArgs(argv) {
     const args = { name: '', shout: false };
     
     for (let i = 2; i < argv.length; i++) {
         const arg = argv[i];
         
-        if (arg.startsWith('--name=')) {
+        if (arg === '--help' || arg === '-h') {
+            printHelp();
+            process.exit(0);
+        } else if (arg.startsWith('--name=')) {
             args.name = arg.split('=')[1];
         } else if (arg === '--name' && i + 1 < argv.length) {
             args.name = argv[i + 1];
@@ -19,18 +56,31 @@ function parseArgs(argv) {
     return args;
 }
 
+/**
+ * Main CLI entry point
+ */
 function main() {
-    const args = parseArgs(process.argv);
-    
-    // Handle missing name
-    if (!args.name) {
-        console.error('Error: --name is required');
-        console.error('Usage: node src/hello/cli.js --name=<name> [--shout]');
+    try {
+        const args = parseArgs(process.argv);
+        
+        // Validate required arguments
+        if (!args.name) {
+            throw new Error('Missing required argument: --name');
+        }
+        
+        const result = formatGreeting(args.name, args.shout);
+        console.log(result);
+        
+    } catch (error) {
+        console.error(`❌ Error: ${error.message}`);
+        console.error('\nRun with --help for usage information');
         process.exit(1);
     }
-    
-    const result = formatGreeting(args.name, args.shout);
-    console.log(result);
 }
 
-main();
+// Only run if called directly (not imported)
+if (require.main === module) {
+    main();
+}
+
+module.exports = { parseArgs, printHelp, main };
