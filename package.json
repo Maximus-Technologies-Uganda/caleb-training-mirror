@@ -12,6 +12,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+
   "devDependencies": {
     "eslint": "^8.57.0"
   },
@@ -30,5 +31,7 @@
       "no-unused-vars": "warn",
       "no-console": "off"
     }
+
+
   }
 }
