@@ -15,7 +15,7 @@ jobs:
 
     env:
       MIRROR_OWNER: "Maximus-Technologies-Uganda"
-      MIRROR_REPO: "training-caleb-mirror"
+      MIRROR_REPO: "caleb-training-mirror"
       MIRROR_BRANCH: "development"   # target branch in the mirror
       ROOT_BRANCH: "development"     # source branch in this root repo
 
