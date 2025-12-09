@@ -47,11 +47,11 @@ jobs:
           git remote add mirror git@github.com:${{ env.MIRROR_OWNER }}/${{ env.MIRROR_REPO }}.git
           git remote -v
 
-      - name: Force-with-lease push to mirror branch
+      - name: Force push to mirror branch
         run: |
           # Mirrors the exact state of the root's development to the mirror's development
-          # Using --force-with-lease to avoid clobbering unexpected remote updates.
-          git push --force-with-lease mirror HEAD:${{ env.MIRROR_BRANCH }}
+          # Using --force to ensure mirror always matches source exactly
+          git push --force mirror HEAD:${{ env.MIRROR_BRANCH }}
 
       - name: Verify mirror sync (optional)
         run: |
