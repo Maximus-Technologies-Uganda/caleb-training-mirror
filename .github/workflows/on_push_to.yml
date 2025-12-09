@@ -47,11 +47,6 @@ jobs:
           git remote add mirror git@github.com:${{ env.MIRROR_OWNER }}/${{ env.MIRROR_REPO }}.git
           git remote -v
 
-      - name: Ensure local branch is current
-        run: |
-          git checkout ${{ env.ROOT_BRANCH }}
-          git pull --ff-only origin ${{ env.ROOT_BRANCH }}
-
       - name: Force-with-lease push to mirror branch
         run: |
           # Mirrors the exact state of the root's development to the mirror's development
@@ -63,4 +58,4 @@ jobs:
           git fetch mirror ${{ env.MIRROR_BRANCH }}:${{ env.MIRROR_BRANCH }}-mirror
           echo "Root SHA:   $(git rev-parse HEAD)"
           echo "Mirror SHA: $(git rev-parse ${{ env.MIRROR_BRANCH }}-mirror)"
-          test "$(git rev-parse HEAD)" = "$(git rev-parse ${{ env.MIRROR_BRANCH }}-mirror )"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse ${{ env.MIRROR_BRANCH }}-mirror)"
