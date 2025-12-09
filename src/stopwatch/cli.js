@@ -73,7 +73,8 @@ function printHelp() {
   console.log(`
 ⏱️  Stopwatch CLI
 
-Usage: node stopwatch/cli.js <command>
+Usage: npm run stopwatch <command>
+   or: node src/stopwatch/cli.js <command>
 
 Commands:
   start     Start the stopwatch
@@ -83,9 +84,9 @@ Commands:
   help      Show this help message
 
 Examples:
-  node stopwatch/cli.js start
-  node stopwatch/cli.js lap
-  node stopwatch/cli.js stop
+  npm run stopwatch start
+  npm run stopwatch lap
+  npm run stopwatch stop
 `);
 }
 

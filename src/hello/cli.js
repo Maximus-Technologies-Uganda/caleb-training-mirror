@@ -13,7 +13,7 @@ function printHelp() {
     console.log(`
 👋 Hello CLI
 
-Usage: node hello/cli.js --name=<name> [--shout]
+Usage: node src/hello/cli.js --name=<name> [--shout]
 
 Options:
   --name <name>   Name to greet (required)
@@ -21,10 +21,10 @@ Options:
   --help, -h      Show this help message
 
 Examples:
-  node hello/cli.js --name=Caleb
+  node src/hello/cli.js --name=Caleb
   # Output: Hello, Caleb!
 
-  node hello/cli.js --name Caleb --shout
+  node src/hello/cli.js --name Caleb --shout
   # Output: HELLO, Caleb!
 `);
 }
