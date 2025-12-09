@@ -286,12 +286,6 @@ cp docs/journals/review-packet-template.md docs/journals/review-packet-[feature-
 
 ---
 
-## 🤝 Questions?
-
-If you're unsure about:
-- **What to document**: Document anything that took more than 5 minutes to figure out
-- **How detailed**: Enough that you could recreate your steps in 6 months
-- **What screenshots**: Any visual proof of success (CI, tests, features)
 
 ---
 
