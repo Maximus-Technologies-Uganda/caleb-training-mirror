@@ -1,6 +1,6 @@
 # Maximus 2.0
 
-A project containing CLI tools and utilities with comprehensive documentation and testing.
+A project containing CLI tools and utilities with comprehensive documentation and testing. Built with Test-Driven Development (TDD) and clean architecture principles.
 
 ---
 
@@ -81,6 +81,169 @@ npm test
 # Run hello CLI tests only
 npm test -- tests/hello.test.js
 ```
+
+---
+
+### Stopwatch CLI
+
+A feature-rich stopwatch module built with Test-Driven Development (TDD) and clean architecture principles.
+
+#### Features
+
+- ⏱️ Start, stop, and lap timing functionality
+- 🎯 Pure core module with no I/O dependencies (fully testable)
+- 📊 Formatted time output (HH:MM:SS.mmm)
+- 🔒 Robust error handling and state management
+- 📝 20 comprehensive tests
+- 🎨 User-friendly CLI with emoji indicators
+
+#### Installation
+
+No installation required. Use the npm script:
+
+```bash
+npm run stopwatch <command>
+```
+
+Or run directly with Node.js:
+
+```bash
+node src/stopwatch/cli.js <command>
+```
+
+#### Usage Examples
+
+**Display help:**
+```bash
+npm run stopwatch help
+# Shows all available commands and usage
+```
+
+**Basic stopwatch flow:**
+```bash
+# Start the stopwatch
+npm run stopwatch start
+# Output: ⏱️  Stopwatch started!
+
+# Record a lap time
+npm run stopwatch lap
+# Output: 🏁 Lap 1: 00:00:05.123
+
+# Record another lap
+npm run stopwatch lap
+# Output: 🏁 Lap 2: 00:00:10.456
+
+# Check current elapsed time
+npm run stopwatch elapsed
+# Output: ⏰ Elapsed: 00:00:12.789
+
+# Stop the stopwatch
+npm run stopwatch stop
+# Output:
+# 🛑 Stopwatch stopped!
+# Final time: 00:00:15.789
+# 
+# Lap times:
+#   Lap 1: 00:00:05.123 (split: 00:00:05.123)
+#   Lap 2: 00:00:10.456 (split: 00:00:05.333)
+```
+
+#### Error Handling
+
+The stopwatch validates all operations and provides clear error messages:
+
+**Lap before start:**
+```bash
+npm run stopwatch lap
+# Output: ❌ Error: Cannot lap: stopwatch not started
+```
+
+**Stop before start:**
+```bash
+npm run stopwatch stop
+# Output: ❌ Error: Cannot stop: stopwatch not started
+```
+
+**Starting twice:**
+```bash
+npm run stopwatch start
+npm run stopwatch start
+# Output: ❌ Error: Stopwatch is already running
+```
+
+#### API (Programmatic Usage)
+
+The CLI wraps the pure `Stopwatch` class from `src/stopwatch/index.js`:
+
+```javascript
+const Stopwatch = require('./src/stopwatch');
+
+// Create a new stopwatch instance
+const sw = new Stopwatch();
+
+// Start timing
+sw.start();
+
+// ... wait some time ...
+
+// Record a lap (returns elapsed milliseconds)
+const lap1 = sw.lap();
+console.log(`Lap 1: ${Stopwatch.formatTime(lap1)}`);
+
+// Get current elapsed time
+const current = sw.elapsedMs();
+
+// Stop the stopwatch (returns final time in milliseconds)
+const finalTime = sw.stop();
+console.log(`Final: ${Stopwatch.formatTime(finalTime)}`);
+
+// Access recorded laps
+console.log(sw.laps); // Array of lap times in milliseconds
+```
+
+#### Available Methods
+
+| Method | Description | Returns |
+|--------|-------------|---------|
+| `start()` | Starts the stopwatch | `void` |
+| `lap()` | Records a lap time | `number` (elapsed ms) |
+| `stop()` | Stops the stopwatch | `number` (final ms) |
+| `elapsedMs()` | Gets current elapsed time | `number` (ms) |
+| `formatTime(ms)` | Formats milliseconds (static) | `string` (HH:MM:SS.mmm) |
+
+#### Architecture
+
+**Clean Architecture Pattern:**
+- **Pure Core Module** (`src/stopwatch/index.js`): Business logic with zero I/O dependencies
+- **Thin CLI Wrapper** (`src/stopwatch/cli.js`): Handles user interaction and output
+
+**Benefits:**
+- ✅ Core module is 100% testable in isolation
+- ✅ Reusable in any context (CLI, web, API)
+- ✅ Deterministic and predictable behavior
+- ✅ Easy to maintain and extend
+
+#### Running Tests
+
+```bash
+# Run all tests (includes 20 stopwatch tests)
+npm test
+
+# Run stopwatch tests only
+npm test -- tests/stopwatch.test.js
+```
+
+**Test Coverage:**
+- ✅ 7 tests for `formatTime()` formatting logic
+- ✅ 7 tests for valid sequences (start → lap → stop)
+- ✅ 6 tests for invalid sequences and error handling
+- ✅ Total: 20 comprehensive tests, all passing
+
+#### Additional Documentation
+
+For detailed documentation including design decisions, state management, and implementation notes, see:
+- [Stopwatch Module Documentation](src/stopwatch/README.md)
+- [Review Packet: feat/stopwatch](docs/journals/review-packet-feat-stopwatch.md)
 
 ---
 
